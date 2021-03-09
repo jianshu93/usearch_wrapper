@@ -20,10 +20,17 @@ Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorit
 
 Options:
 -d directory contains raw forward and reverse reads, must end with _R1.fq and _R2.fq, .1.fastq and .2.fastq, .R1.fastq and .R2.fastq, .R1.fq and .R2.fq, .1.fq and .2.fq
+
 -o output directory
+
 -t taxonomy classification method, NBC or sintax, default NBC -S species definition, ASV or OTU or both, by default is OTU only. Both will take more time
+
 -p primers used for ampflication, should be in fasta format with fasta header >forward and >reverse, respectively
+
 -e phylogenetric tree building, T or F, defaulf F
+
 -T threads used for vsearch and usearch, default all the threads available
+
 -b database path for taxonomy classification, default none and download database from usearch website for each classifier, use corresponding database for NBC or Sintax
+
 -i identity for OTU clustering, default 0.97
