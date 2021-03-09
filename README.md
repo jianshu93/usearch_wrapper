@@ -12,7 +12,7 @@ This shell script has the following dependencies:
 
 Useage: chmod a+x ./wsearch.bash
 
-./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S OTU -t NBC -e T
+nohup time ./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S OTU -t NBC -e T &
 
 OTU clustering will be performed using UPARSE algorithm implemented in usearch (Edgar 2016, Nat. Method) and taxonomy classfication will performed either using the Näive bayesian classifier (NBC) (Wang et.al. 2007, Appl. Env. Micro) or sintax algorithm inplemented in vsearch(Edgar 2016, bioRxive, https://doi.org/10.1101/074161).
 
