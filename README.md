@@ -27,16 +27,12 @@ Options:
 
 -t taxonomy classification method, NBC or sintax, default NBC -S species definition, ASV or OTU or both, by default is OTU only. Both will take more time
 
--p primers used for ampflication, should be in fasta format with fasta header >forward and >reverse, respectively. see below:
+-p primers used for ampflication, should be in fasta format with fasta header >forward and >reverse, respectively. 
 
-
-
-">forward
-GTGARTCATCGARTCTTTG
->reverse
-TCCTCCGCTTATTGATATGC
-"
-
+  >forward
+  GTGARTCATCGARTCTTTG
+  >reverse
+  TCCTCCGCTTATTGATATGC
 
 -e phylogenetric tree building, T or F, defaulf F
 
