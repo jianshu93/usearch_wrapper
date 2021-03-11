@@ -30,9 +30,12 @@ Options:
 -p primers used for ampflication, should be in fasta format with fasta header >forward and >reverse, respectively. 
 
 
-`>forward \n` 
+`>forward` 
+
 `GTGARTCATCGARTCTTTG`
+
 `>reverse`
+
 `TCCTCCGCTTATTGATATGC`
 
 -e phylogenetric tree building, T or F, defaulf F
