@@ -3,9 +3,11 @@ usearch wrapper for amplicon analysis. Support for 16S and ITS. This is still un
 This shell script has the following dependencies:
 
 1. Falco v0.2.2, a C++ implentation of FastQC, way faster and user friendly than FastQC and more importantly, it is under active development (https://github.com/smithlabcode/falco)
-2. Vsearch and Usearch v11,both 32 bit and 64 bit works but we strongly suggest 64 bit for large dataset. for example when you have more then 300 samples or even more.
+2. Vsearch and Usearch v11 (https://drive5.com/usearch/download.html),both 32 bit and 64 bit works but we strongly suggest 64 bit for large dataset. for example when you have more then 300 samples or even more.
 3. Mafft v7.0 for multiple sequence alignment (MSA).
-4. FasttreeMP for building maximum likehood tree and bootsrtraping.
+4. FastTreeMP (http://www.microbesonline.org/fasttree/#OpenMP) for building maximum likehood tree and bootsrtraping.
+
+falco, vsearch and mafft can be installed via conda install. FastTreeMP can be downloaded and compiled from source.
 
 
 
