@@ -16,9 +16,9 @@ Useage: chmod a+x ./wsearch.bash
 
 nohup time ./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S OTU -t NBC -e T &
 
-OTU clustering will be performed using UPARSE algorithm implemented in usearch (Edgar 2016, Nat. Method) and taxonomy classfication will performed either using the Näive bayesian classifier (NBC) (Wang et.al. 2007, Appl. Env. Micro) or sintax algorithm inplemented in vsearch(Edgar 2016, bioRxive, https://doi.org/10.1101/074161).
+OTU clustering will be performed using UPARSE algorithm implemented in usearch (Edgar 2016, Nat. Method,https://www.nature.com/articles/nmeth.2604) and taxonomy classfication will performed either using the Näive bayesian classifier (NBC) (Wang et.al. 2007, Appl. Env. Micro,https://aem.asm.org/content/73/16/5261.short) or sintax algorithm inplemented in vsearch(Edgar 2016, bioRxive, https://doi.org/10.1101/074161).
 
-Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorithm (Edgar 2016,bioRxive, https://doi.org/10.1101/081257). We do not recommend this method because ASVs can artificially split bacterial genomes into separate clusters (Scholss 2021, bioRxive, https://doi.org/10.1101/2021.02.26.433139) and thus overestimation of diversity (https://aem.asm.org/content/79/19/5962) due to 16S copy numer while OTU clustering at 97% identity is less easily subjected to this issue.
+Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorithm (Edgar 2016,bioRxive, https://doi.org/10.1101/081257). We do not recommend this method because ASVs can artificially split bacterial genomes into separate clusters (Scholss 2021, bioRxive, https://doi.org/10.1101/2021.02.26.433139) and thus overestimation of species diversity (https://aem.asm.org/content/79/19/5962) due to 16S copy numer while OTU clustering at 97% identity is less easily subjected to this issue.
 
 Options:
 -d directory contains raw forward and reverse reads, must end with _R1.fq and _R2.fq, .1.fastq and .2.fastq, .R1.fastq and .R2.fastq, .R1.fq and .R2.fq, .1.fq and .2.fq
