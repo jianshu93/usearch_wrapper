@@ -31,11 +31,11 @@ Options:
 
 
 
->forward
+">forward
 GTGARTCATCGARTCTTTG
 >reverse
 TCCTCCGCTTATTGATATGC
-
+"
 
 
 -e phylogenetric tree building, T or F, defaulf F
