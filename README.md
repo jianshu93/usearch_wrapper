@@ -20,6 +20,8 @@ OTU clustering will be performed using UPARSE algorithm implemented in usearch (
 
 Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorithm (Edgar 2016,bioRxive, https://doi.org/10.1101/081257). We do not recommend this method because ASVs can artificially split bacterial genomes into separate clusters (Scholss 2021, bioRxive, https://doi.org/10.1101/2021.02.26.433139) and thus overestimation of species diversity (https://aem.asm.org/content/79/19/5962) due to 16S copy numer while OTU clustering at 97% identity is less easily subjected to this issue.
 
+There are a number of ways to correct for 16S copy numbers via searching in the microbial genomic database. However, all those methods perform poorly because of large variation in 16S copies even in close related genomes(More than 99.9% genome similarity) (https://link.springer.com/article/10.1186/s40168-018-0420-9). What we suggest is to use presence-absence OTU table at the same time though this will not take into account the abundance of the same genome speceis in each sample. I am very interested in developing tools to correct the 16S copy bias considering the fact that we have a much large complete microbial genome database.
+
 Options:
 -d directory contains raw forward and reverse reads, must end with _R1.fq and _R2.fq, .1.fastq and .2.fastq, .R1.fastq and .R2.fastq, .R1.fq and .R2.fq, .1.fq and .2.fq
 
