@@ -30,7 +30,7 @@ Options:
 -p primers used for ampflication, should be in fasta format with fasta header >forward and >reverse, respectively. 
 
 
-`>forward`
+`>forward \n` 
 `GTGARTCATCGARTCTTTG`
 `>reverse`
 `TCCTCCGCTTATTGATATGC`
