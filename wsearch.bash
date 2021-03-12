@@ -298,4 +298,5 @@ if [[ "$tre" == "T" ]] ; then
         fi
     fi
 fi
+$($awk 'print $1,$4' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
 echo "Amplicon sequence analysis done, output files are in $output"
