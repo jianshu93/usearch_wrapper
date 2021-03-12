@@ -1,6 +1,7 @@
 #!/bin/bash
 ### Jianshu Zhao (jianshu.zhao@gatech.edu)
 ### Amplicon analysis pipeline based on open source sofware vsearch and usearch.
+###
 threads=$(nproc)
 dir=./
 output=./output
@@ -297,6 +298,4 @@ if [[ "$tre" == "T" ]] ; then
         fi
     fi
 fi
-
-$(rm rdp_16s_v18.fa)
 echo "Amplicon sequence analysis done, output files are in $output"
