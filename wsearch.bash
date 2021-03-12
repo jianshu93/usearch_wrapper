@@ -1,5 +1,6 @@
 #!/bin/bash
-
+### Jianshu Zhao (jianshu.zhao@gatech.edu)
+### Amplicon analysis pipeline based on open source sofware vsearch and usearch.
 threads=$(nproc)
 dir=./
 output=./output
