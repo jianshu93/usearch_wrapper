@@ -188,10 +188,10 @@ if [[ "$spe_def" == "ASV" ]]; then
         if [[ "$db" == "" ]]; then
             $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
             $(gunzip silva_16s_v123.fa.gz)
-            $(usearch --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
+            $(usearch --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
             $(rm silva_16s_v123.fa)
         else
-            $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
+            $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
         fi
         echo "taxonomy asignment of ASVs using sintax done"
     fi
@@ -223,12 +223,12 @@ else
             if [[ "$db" == "" ]]; then
                 $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                 $(gunzip silva_16s_v123.fa.gz)
-                $(usearch --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
-                $(usearch --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
+                $(usearch --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(usearch --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                 $(rm silva_16s_v123.fa)
             else
-                $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
-                $(usearch --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
+                $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(usearch --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
             fi
             echo "taxonomy asignment of OTUs and ASVs using sintax done"
         fi
@@ -251,10 +251,10 @@ else
             if [ "$db" == "" ]; then
                 $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                 $(gunzip silva_16s_v123.fa.gz)
-                $(usearch --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
+                $(usearch --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                 $(rm silva_16s_v123.fa)
             else
-                $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8)
+                $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
             fi
             echo "taxonomy asignment of OTUs using sintax done"
         fi
