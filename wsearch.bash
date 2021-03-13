@@ -171,7 +171,7 @@ echo "Sequence dereplication done"
 if [[ "$spe_def" == "ASV" ]]; then
     echo "I am clustering ASVs"
     $(usearch -unoise3 $output/uniques_vsearch.fa -zotus $output/ASVs.fa -minsize 2 -threads $threads)
-    $(usearch -usearch_global $output/QCd_merged.fa -db $output/ASVs.fa -id 0.99 -otutabout $output/ASV_counts.txt -threads $threads -strand both)
+    $(vsearch --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
     echo "I am done generating ASVs"
     echo "I am doing taxonomy assignment of ASVs"
     if [[ "$tax" == "NBC" ]]; then
@@ -189,9 +189,11 @@ if [[ "$spe_def" == "ASV" ]]; then
             $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
             $(gunzip silva_16s_v123.fa.gz)
             $(usearch --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+            $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
             $(rm silva_16s_v123.fa)
         else
             $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+            $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
         fi
         echo "taxonomy asignment of ASVs using sintax done"
     fi
@@ -199,9 +201,9 @@ else
     if [[ "$spe_def" == "both" ]]; then
         echo "I am clustering OTUs and generate ASVs"
         $(usearch -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
-        $(usearch -usearch_global $output/QCd_merged.fa -db $output/otus.fa -id 0.97 -otutabout $output/otu_counts.txt -threads $threads -strand both)
+        $(vsearch --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
         $(usearch -unoise3 $output/uniques_vsearch.fa -zotus ASVs.fa -minsize 2 -threads $threads)
-        $(usearch -usearch_global $output/QCd_merged.fa -db $output/ASVs.fa -id 0.99 -otutabout $output/ASV_counts.txt -threads $threads -strand both)
+        $(vsearch --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
 
         echo "I am done clustering OTUs and generating ASVs"
         echo "I am doing taxonomy assignment of OTUs and ASVs"
@@ -213,6 +215,7 @@ else
 		        $(gunzip rdp_16s_v18.fa.gz)
                 $(usearch -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
                 $(usearch -nbc_tax $output/otus.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
+                
                 $(rm rdp_16s_v18.fa)
 	        else
                 $(usearch -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
@@ -225,17 +228,21 @@ else
                 $(gunzip silva_16s_v123.fa.gz)
                 $(usearch --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                 $(usearch --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+                $($awk '{print $1"\t"$4}' $output/otu_tax_sintax.txt > $output/otu_tax_sintax_0.8.txt)
                 $(rm silva_16s_v123.fa)
             else
                 $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                 $(usearch --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+                $($awk '{print $1"\t"$4}' $output/otu_tax_sintax.txt > $output/otu_tax_sintax_0.8.txt)
             fi
             echo "taxonomy asignment of OTUs and ASVs using sintax done"
         fi
     else
         echo "I am clustering OTUs"
         $(usearch -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
-        $(usearch -usearch_global $output/QCd_merged.fa -db $output/otus.fa -id 0.97 -otutabout $output/otu_counts.txt -threads $threads -strand both)
+        $(vsearch --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
         echo "OTUs clustering done"
         if [[ "$tax" == "NBC" ]]; then
 	        if [[ "$db" == "" ]]; then
@@ -252,9 +259,11 @@ else
                 $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                 $(gunzip silva_16s_v123.fa.gz)
                 $(usearch --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $($awk '{print $1"\t"$4}' $output/otu_tax_sintax.txt > $output/otu_tax_sintax_0.8.txt)
                 $(rm silva_16s_v123.fa)
             else
                 $(usearch --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
             fi
             echo "taxonomy asignment of OTUs using sintax done"
         fi
@@ -301,5 +310,4 @@ if [[ "$tre" == "T" ]] ; then
         fi
     fi
 fi
-$($awk '{print $1,$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
 echo "Amplicon sequence analysis done, output files are in $output"
