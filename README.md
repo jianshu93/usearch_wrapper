@@ -80,3 +80,5 @@ Edgar, Robert C. 2016. “UNOISE2: Improved Error-Correction for Illumina 16S an
 Price, M. N., Deha, P. S., & Arkin, A. P. (2010). FastTree 2 – Approximately Maximum-Likelihood Trees for Large Alignments, 5(3), e9490. http://doi.org/10.1371/journal.pone.0009490
 
 Edgar, Robert C. 2016. “SINTAX: a Simple Non-Bayesian Taxonomy Classifier for 16S and ITS Sequences.” bioRxiv 1–20.
+
+Wang, Qiong, George M. Garrity, James M. Tiedje, and James R. Cole. 2007. “Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences Into the New Bacterial Taxonomy.” Applied and environmental microbiology 73(16):5261–67.
