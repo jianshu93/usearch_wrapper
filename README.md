@@ -64,6 +64,7 @@ Options:
 
 -i identity for OTU clustering, default 0.97, and I strongly recommend the default one
 
+-u usearch binary path, /usr/local/bin/usearch, for example, make it executable first, by default is the ../dependencies/usearch_linux , a 32 bit version
 
 # Reference
 Edgar, R. C., & Flyvbjerg, H. (2015). Error filtering, pair assembly and error correction for next-generation sequencing reads. Bioinformatics, 1–7. http://doi.org/10.1093/bioinformatics/btv401
