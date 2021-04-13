@@ -144,8 +144,8 @@ echo "I am merging pair-end amplicon reads using vsearch with $threads threads"
 for F in $dir/*_R1.fq; do
 	BASE=${F##*/}
 	SAMPLE=${BASE%_*}
-	$(./dependicies/vsearch_linux --fastq_mergepairs $F --reverse ${SAMPLE}_R2.fq --fastqout $output/${SAMPLE}_merged.fq -relabel ${SAMPLE}. --threads $threads)
-    $(./dependicies/falco_linux -o $output/${SAMPLE}_falco_output $F ${SAMPLE}_R2.fq
+	$(./dependencies/vsearch_linux --fastq_mergepairs $F --reverse ${SAMPLE}_R2.fq --fastqout $output/${SAMPLE}_merged.fq -relabel ${SAMPLE}. --threads $threads)
+    $(./dependencies/falco_linux -o $output/${SAMPLE}_falco_output $F ${SAMPLE}_R2.fq)
 done
 for F in $output/*_merged.fq; do
     $(cat $F >> $output/all_samples_merged.fq)
@@ -153,7 +153,7 @@ for F in $output/*_merged.fq; do
 done
 echo "reads merging done"
 
-if [[ "primer" == ""]]; then
+if [[ "$primer" == ""]]; then
     echo "I am removing primers"
     $(usearch_bin -fastx_subsample $output/all_samples_merged.fq -sample_size 5000 -fastqout $output/all_sub_for_primer_check.fq -threads $threads)
     $(usearch_bin -search_oligodb $output/all_sub_for_primer_check.fq -db $primer -strand both -userout $output/primer_hits.txt -userfields query+qlo+qhi+qstrand -threads 1)
@@ -161,20 +161,21 @@ if [[ "primer" == ""]]; then
     variable2=`expr $(awk '$4 == "-"' $output/primer_hits.txt | awk '{print $3 - $2}' | sort | awk ' { a[i++]=$1; } END { print a[int(i/2)]; }') + 1`
     echo "$variable1 bps will be removed at the beginning of the merged reads"
     echo "$variable2 bps will be removed at the end of the merged reads"
-    $(./dependicies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
+    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
     echo "primer removing done"
 else
     $(cp $output/all_samples_merged.fq $output/QCd_merged.fa)
     echo "No primers to remove, next step"
+fi
 
 echo "I am dereplicating sequences"
-$(./dependicies/vsearch_linux --derep_fulllength $output/QCd_merged.fa -sizeout -relabel Uniq -output $output/uniques_vsearch.fa --threads $threads)
+$(./dependencies/vsearch_linux --derep_fulllength $output/QCd_merged.fa -sizeout -relabel Uniq -output $output/uniques_vsearch.fa --threads $threads)
 echo "Sequence dereplication done"
 
 if [[ "$spe_def" == "ASV" ]]; then
     echo "I am clustering ASVs"
     $(usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus $output/ASVs.fa -minsize 2 -threads $threads)
-    $(./dependicies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
+    $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
     echo "I am done generating ASVs"
     echo "I am doing taxonomy assignment of ASVs"
     if [[ "$tax" == "NBC" ]]; then
@@ -204,9 +205,9 @@ else
     if [[ "$spe_def" == "both" ]]; then
         echo "I am clustering OTUs and generate ASVs"
         $(usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
-        $(./dependicies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
+        $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
         $(usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus ASVs.fa -minsize 2 -threads $threads)
-        $(./dependicies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
+        $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
 
         echo "I am done clustering OTUs and generating ASVs"
         echo "I am doing taxonomy assignment of OTUs and ASVs"
