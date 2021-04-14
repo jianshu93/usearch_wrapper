@@ -67,17 +67,10 @@ do
            ;;
 	esac
 done
-## checking vsearch path
-##if ! [ -x "$(command -v vsearch)" ]; then
-  ##echo 'Error: vsearch is not installed. Please install it' >&2
-  ##exit 1
-##fi
-### checking usearch path
-##if ! [ -x "$(command -v usearch)" ]; then
-  ##echo 'Error: usearch is not installed. Please install it' >&2
-  ##exit 1
-##fi
-### check directory
+
+echo "$primer will be used for primer removing"
+echo $usearch_bin
+
 if [ -d "$dir" ] 
 then
     echo "" 
@@ -85,48 +78,6 @@ else
     echo "$dir does not exist, please offer a directory that exists"
     exit 1
 fi
-
-### fastq file name transformation
-for f in $dir/*.R1.fastq; do
-    a="$(echo $f | sed s/.R1.fastq/_R1.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.R2.fastq; do
-    a="$(echo $f | sed s/.R2.fastq/_R2.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.1.fastq; do
-    a="$(echo $f | sed s/.1.fastq/_R1.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.2.fastq; do
-    a="$(echo $f | sed s/.2.fastq/_R2.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.R1.fq; do
-    a="$(echo $f | sed s/.R1.fq/_R1.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.R2.fq; do
-    a="$(echo $f | sed s/.R2.fq/_R2.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.1.fq; do
-    a="$(echo $f | sed s/.1.fq/_R1.fq/)"
-    mv "$f" "$a"
-done
-
-for f in $dir/*.2.fq; do
-    a="$(echo $f | sed s/.2.fq/_R2.fq/)"
-    mv "$f" "$a"
-done
-
 
 if [ -d "$output" ] 
 then
@@ -140,23 +91,27 @@ fi
 
 ### reads merging
 echo "I am merging pair-end amplicon reads using vsearch with $threads threads"
+dfiles="${dir}/*_R1.fastq"
 
-for F in $dir/*_R1.fq; do
+for F in $dfiles; do
 	BASE=${F##*/}
 	SAMPLE=${BASE%_*}
-	$(./dependencies/vsearch_linux --fastq_mergepairs $F --reverse ${SAMPLE}_R2.fq --fastqout $output/${SAMPLE}_merged.fq -relabel ${SAMPLE}. --threads $threads)
-    $(./dependencies/falco_linux -o $output/${SAMPLE}_falco_output $F ${SAMPLE}_R2.fq)
+	$(./dependencies/vsearch_linux --fastq_mergepairs $F --reverse ${dir}/${SAMPLE}_R2.fastq --fastqout $output/${SAMPLE}_merged.fq -relabel ${SAMPLE}. --threads $threads)
+    $(./dependencies/falco_linux -o $output/${SAMPLE}_falco_output $F ${dir}/${SAMPLE}_R2.fastq)
 done
-for F in $output/*_merged.fq; do
+
+ofiles="${output}/*_merged.fq"
+
+for F in $ofiles; do
     $(cat $F >> $output/all_samples_merged.fq)
     $(rm $F)
 done
 echo "reads merging done"
 
-if [[ "$primer" == ""]]; then
+if [[ ! -z "$primer" ]]; then
     echo "I am removing primers"
-    $(usearch_bin -fastx_subsample $output/all_samples_merged.fq -sample_size 5000 -fastqout $output/all_sub_for_primer_check.fq -threads $threads)
-    $(usearch_bin -search_oligodb $output/all_sub_for_primer_check.fq -db $primer -strand both -userout $output/primer_hits.txt -userfields query+qlo+qhi+qstrand -threads 1)
+    $($usearch_bin -fastx_subsample $output/all_samples_merged.fq -sample_size 5000 -fastqout $output/all_sub_for_primer_check.fq -threads $threads)
+    $($usearch_bin -search_oligodb $output/all_sub_for_primer_check.fq -db $primer -strand both -userout $output/primer_hits.txt -userfields query+qlo+qhi+qstrand -threads 1)
     variable1=`expr $(awk '$4 == "+"' $output/primer_hits.txt | awk '{print $3}' | sort | awk ' { a[i++]=$1; } END { print a[int(i/2)]; }')`
     variable2=`expr $(awk '$4 == "-"' $output/primer_hits.txt | awk '{print $3 - $2}' | sort | awk ' { a[i++]=$1; } END { print a[int(i/2)]; }') + 1`
     echo "$variable1 bps will be removed at the beginning of the merged reads"
@@ -164,8 +119,8 @@ if [[ "$primer" == ""]]; then
     $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
     echo "primer removing done"
 else
-    $(cp $output/all_samples_merged.fq $output/QCd_merged.fa)
-    echo "No primers to remove, next step"
+    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
+    echo "No primers to remove, reads are filtered"
 fi
 
 echo "I am dereplicating sequences"
@@ -174,12 +129,12 @@ echo "Sequence dereplication done"
 
 if [[ "$spe_def" == "ASV" ]]; then
     echo "I am clustering ASVs"
-    $(usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus $output/ASVs.fa -minsize 2 -threads $threads)
+    $($usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus $output/ASVs.fa -minsize 2 -threads $threads)
     $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
     echo "I am done generating ASVs"
     echo "I am doing taxonomy assignment of ASVs"
     if [[ "$tax" == "NBC" ]]; then
-	    if [[ "$db" == "" ]]; then
+	    if [[ ! -z "$db" ]]; then
 		    $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		    $(gunzip rdp_16s_v18.fa.gz)
             $(usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
@@ -187,92 +142,123 @@ if [[ "$spe_def" == "ASV" ]]; then
 	    else
             $(usearch_bin -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
 	    fi
+        $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
+        $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
+        $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
         echo "taxonomy asignment of ASVs using Näive bayesian classifier done"
     else
-        if [[ "$db" == "" ]]; then
-            $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
-            $(gunzip silva_16s_v123.fa.gz)
-            $(usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-            $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
-            $(rm silva_16s_v123.fa)
+        if [[ "$tax" == "SINTAX" ]]; then
+            if [[ ! -z "$db" ]]; then
+                $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
+                $(gunzip silva_16s_v123.fa.gz)
+                $($usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(rm silva_16s_v123.fa)
+            else
+                $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+            fi
+            $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
+            $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+            $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
         else
-            $(usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-            $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+            echo "Not supported"
         fi
         echo "taxonomy asignment of ASVs using sintax done"
     fi
 else
     if [[ "$spe_def" == "both" ]]; then
         echo "I am clustering OTUs and generate ASVs"
-        $(usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
+        $($usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
         $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
-        $(usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus ASVs.fa -minsize 2 -threads $threads)
+        $($usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus ASVs.fa -minsize 2 -threads $threads)
         $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
 
         echo "I am done clustering OTUs and generating ASVs"
         echo "I am doing taxonomy assignment of OTUs and ASVs"
         if [[ "$tax" == "NBC" ]]; then
-            echo "I am done clustering OTUs and generating ASVs"
-            echo "I am doing taxonomy assignment of OTUs and also ASVs"
-	        if [[ "$db" == "" ]]; then
+	        if [[ ! -z "$db" ]]; then
 		        $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		        $(gunzip rdp_16s_v18.fa.gz)
-                $(usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
-                $(usearch_bin -nbc_tax $output/otus.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
-                
+                $($usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
+                $($usearch_bin -nbc_tax $output/otus.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
                 $(rm rdp_16s_v18.fa)
 	        else
-                $(usearch_bin -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
-                $(usearch_bin -nbc_tax $output/otus.fa --db $db -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
+                $($usearch_bin -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
+                $($usearch_bin -nbc_tax $output/otus.fa --db $db -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
 	        fi
+            $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
+            $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_rdp_0.5.txt)
+            $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
+            $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
+            $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
+            $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
             echo "taxonomy asignment of OTUs and ASVs using Näive bayesian classifier done"
         else
-            if [[ "$db" == "" ]]; then
-                $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
-                $(gunzip silva_16s_v123.fa.gz)
-                $(usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $(usearch_bin --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
-                $($awk '{print $1"\t"$4}' $output/otu_tax_sintax.txt > $output/otu_tax_sintax_0.8.txt)
-                $(rm silva_16s_v123.fa)
+            if [[ "$tax" == "SINTAX" ]]; then
+                if [[ ! -z "$db" ]]; then
+                    $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
+                    $(gunzip silva_16s_v123.fa.gz)
+                    $($usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $($usearch_bin --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $(rm silva_16s_v123.fa)
+                else
+                    $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $($usearch_bin --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                fi
+                $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
+                $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
+                $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
+                $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
+                $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+                $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
             else
-                $(usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $(usearch_bin --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
-                $($awk '{print $1"\t"$4}' $output/otu_tax_sintax.txt > $output/otu_tax_sintax_0.8.txt)
+                echo "Taxonomy assignment not supported"
             fi
-            echo "taxonomy asignment of OTUs and ASVs using sintax done"
+            echo "Taxonomy asignment of OTUs and ASVs using sintax done"
         fi
     else
-        echo "I am clustering OTUs"
-        $(usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
-        $(vsearch --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
-        echo "OTUs clustering done"
-        if [[ "$tax" == "NBC" ]]; then
-	        if [[ "$db" == "" ]]; then
-		        $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
-		        $(gunzip rdp_16s_v18.fa.gz)
-                $(usearch_bin -nbc_tax $output/otus.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
-                $(rm rdp_16s_v18.fa)
-	        else
-                $(usearch_bin -nbc_tax $output/otus.fa --db $db -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
-	        fi
-            echo "taxonomy asignment of OTUs using Näive bayesian classifier done"
-        else
-            if [ "$db" == "" ]; then
-                $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
-                $(gunzip silva_16s_v123.fa.gz)
-                $(usearch_bin --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $($awk '{print $1"\t"$4}' $output/otu_tax_sintax.txt > $output/otu_tax_sintax_0.8.txt)
-                $(rm silva_16s_v123.fa)
+        if [[ "$spe_def" == "OTU" ]]; then
+            echo "I am clustering OTUs"
+            $($usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
+            $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
+            echo "OTUs clustering done"
+            echo "I am doing taxonomy assignment of OTUs"
+            if [[ "$tax" == "NBC" ]]; then
+	            if [[ ! -z "$db" ]]; then
+		            $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
+		            $(gunzip rdp_16s_v18.fa.gz)
+                    $($usearch_bin -nbc_tax $output/otus.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
+                    $(rm rdp_16s_v18.fa)
+	            else
+                    $($usearch_bin -nbc_tax $output/otus.fa --db $db -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
+	            fi
+                $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_rdp_0.5.txt)
+                $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
+                $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
+                echo "taxonomy asignment of OTUs using Näive bayesian classifier done"
             else
-                $(usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $($awk '{print $1"\t"$4}' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+                if [[ "$tax" == "SINTAX" ]]; then
+                    if [[ ! -z "$db" ]]; then
+                        $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
+                        $(gunzip silva_16s_v123.fa.gz)
+                        $($usearch_bin --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                        $(rm silva_16s_v123.fa)
+                    else
+                        $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    fi
+                    $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
+                    $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
+                    $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
+                    echo "taxonomy asignment of OTUs using SINTAX classifier done"
+                else
+                    echo "Taxonomy assignment method not supported"
+                fi
             fi
-            echo "taxonomy asignment of OTUs using sintax done"
+        else
+            echo "Only ASV and OTU are supported"
         fi
     fi
 fi
+
 ### multiple sequence alignment and phylogenetic tree building
 if [[ "$tre" == "T" ]] ; then
     echo "I am doing multiple sequence alignment. This may take long, please wait..."
