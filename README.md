@@ -7,16 +7,24 @@ This shell script has the following dependencies:
 3. Clustal Omega v1.2.4 for multiple sequence alignment (MSA).
 4. FastTreeMP (http://www.microbesonline.org/fasttree/#OpenMP) for building maximum likehood tree and bootsrtraping.
 
-falco, vsearch and clustal omega and fasttree can be installed via conda install. FastTreeMP can be downloaded and compiled from source (those four dependencies are provided in the latest version and directly called without the need to install).
+falco, vsearch and clustal omega and fasttreeMP can be installed via conda install. FastTreeMP can be downloaded and compiled from source (those four dependencies are provided in the latest version and directly called without the need to install).
 
-Now this script supported Linux only, tested on Ubuntu 18.0.4 and RHEL 7
+Now this script supported Linux and MacOS, tested on Ubuntu 18.0.4, RHEL 7 and MacOS Mojave (usearch 32 bit not suported on later versions). For MacOS Mojave, you need to install GNU awk (brew install gawk) after installing brew (https://brew.sh)
 
 
 
 ```
 
 ### install git first, on MacOS just run 'brew install git' after installing brew here: https://brew.sh
-git clone https://github.com/jianshu93/usearch_wrapper . On linux please run sudo apt-get install git
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+brew install gawk
+brew install git
+
+git clone https://github.com/jianshu93/usearch_wrapper
+
+### On linux please run 
+sudo apt-get install git
 
 ## you can only run script in this directory because there are hard-coded dependencies in this directory
 cd usearch_wrapper

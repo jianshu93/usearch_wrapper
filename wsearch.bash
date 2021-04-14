@@ -118,7 +118,7 @@ if [[ ! -z "$primer" ]]; then
     $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa --threads $threads)
     echo "primer removing done"
 else
-    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa --threads $threads)
+    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 400 --fastq_minlen 200 --fastaout $output/QCd_merged.fa --threads $threads)
     echo "No primers to remove, reads are filtered"
 fi
 
