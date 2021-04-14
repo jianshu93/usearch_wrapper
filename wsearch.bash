@@ -10,7 +10,7 @@ identity=0.97
 tax="NBC"
 tre="F"
 usearch_bin=./dependencies/usearch11.0.667_i86linux32
-echo $threads
+
 while getopts ":d:o:t:S:e:T:p:b:i:u:h" option
 do
 	case $option in
@@ -134,7 +134,7 @@ if [[ "$spe_def" == "ASV" ]]; then
     echo "I am done generating ASVs"
     echo "I am doing taxonomy assignment of ASVs"
     if [[ "$tax" == "NBC" ]]; then
-	    if [[ ! -z "$db" ]]; then
+	    if [[ -z "$db" ]]; then
 		    $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		    $(gunzip rdp_16s_v18.fa.gz)
             $(usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
@@ -143,12 +143,12 @@ if [[ "$spe_def" == "ASV" ]]; then
             $(usearch_bin -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
 	    fi
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
-        $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
-        $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
+        $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
+        $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
         echo "taxonomy asignment of ASVs using Näive bayesian classifier done"
     else
         if [[ "$tax" == "SINTAX" ]]; then
-            if [[ ! -z "$db" ]]; then
+            if [[ -z "$db" ]]; then
                 $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                 $(gunzip silva_16s_v123.fa.gz)
                 $($usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
@@ -157,8 +157,8 @@ if [[ "$spe_def" == "ASV" ]]; then
                 $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
             fi
             $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
-            $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
-            $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
         else
             echo "Not supported"
         fi
@@ -175,7 +175,7 @@ else
         echo "I am done clustering OTUs and generating ASVs"
         echo "I am doing taxonomy assignment of OTUs and ASVs"
         if [[ "$tax" == "NBC" ]]; then
-	        if [[ ! -z "$db" ]]; then
+	        if [[ -z "$db" ]]; then
 		        $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		        $(gunzip rdp_16s_v18.fa.gz)
                 $($usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
@@ -187,14 +187,14 @@ else
 	        fi
             $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
             $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_rdp_0.5.txt)
-            $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
-            $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
-            $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
-            $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
             echo "taxonomy asignment of OTUs and ASVs using Näive bayesian classifier done"
         else
             if [[ "$tax" == "SINTAX" ]]; then
-                if [[ ! -z "$db" ]]; then
+                if [[ -z "$db" ]]; then
                     $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                     $(gunzip silva_16s_v123.fa.gz)
                     $($usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
@@ -206,10 +206,10 @@ else
                 fi
                 $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
                 $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
-                $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
-                $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
-                $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
-                $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
+                $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
+                $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
+                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
             else
                 echo "Taxonomy assignment not supported"
             fi
@@ -223,7 +223,7 @@ else
             echo "OTUs clustering done"
             echo "I am doing taxonomy assignment of OTUs"
             if [[ "$tax" == "NBC" ]]; then
-	            if [[ ! -z "$db" ]]; then
+	            if [[ -z "$db" ]]; then
 		            $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		            $(gunzip rdp_16s_v18.fa.gz)
                     $($usearch_bin -nbc_tax $output/otus.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
@@ -232,22 +232,23 @@ else
                     $($usearch_bin -nbc_tax $output/otus.fa --db $db -strand plus --threads $threads -tabbedout $output/otu_tax_rdp.txt)
 	            fi
                 $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_rdp_0.5.txt)
-                $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
-                $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
+                $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
+                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
                 echo "taxonomy asignment of OTUs using Näive bayesian classifier done"
             else
                 if [[ "$tax" == "SINTAX" ]]; then
-                    if [[ ! -z "$db" ]]; then
+                    if [[ -z "$db" ]]; then
                         $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                         $(gunzip silva_16s_v123.fa.gz)
-                        $($usearch_bin --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                        $($usearch_bin -sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                         $(rm silva_16s_v123.fa)
                     else
-                        $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                        $($usearch_bin -sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                        echo "using $db"
                     fi
                     $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
-                    $($awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
-                    $($awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
+                    $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
+                    $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
                     echo "taxonomy asignment of OTUs using SINTAX classifier done"
                 else
                     echo "Taxonomy assignment method not supported"
