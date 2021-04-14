@@ -55,14 +55,12 @@ Options:
 
 -p primers used for ampflication, should be in fasta format with fasta header >forward and >reverse, respectively. default is none, without removing primers but do quality control directly
 
-
-`>forward` 
-
-`GTGARTCATCGARTCTTTG`
-
-`>reverse`
-
-`TCCTCCGCTTATTGATATGC`
+```
+>forward 
+GTGARTCATCGARTCTTTG
+>reverse
+TCCTCCGCTTATTGATATGC`
+```
 
 -e phylogenetric tree building, T or F, defaulf F
 
