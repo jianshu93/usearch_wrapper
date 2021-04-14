@@ -97,7 +97,6 @@ for F in $dfiles; do
 	BASE=${F##*/}
 	SAMPLE=${BASE%_*}
 	$(./dependencies/vsearch_linux --fastq_mergepairs $F --reverse ${dir}/${SAMPLE}_R2.fastq --fastqout $output/${SAMPLE}_merged.fq -relabel ${SAMPLE}. --threads $threads)
-    $(./dependencies/falco_linux -o $output/${SAMPLE}_falco_output $F ${dir}/${SAMPLE}_R2.fastq)
 done
 
 ofiles="${output}/*_merged.fq"
@@ -116,10 +115,10 @@ if [[ ! -z "$primer" ]]; then
     variable2=`expr $(awk '$4 == "-"' $output/primer_hits.txt | awk '{print $3 - $2}' | sort | awk ' { a[i++]=$1; } END { print a[int(i/2)]; }') + 1`
     echo "$variable1 bps will be removed at the beginning of the merged reads"
     echo "$variable2 bps will be removed at the end of the merged reads"
-    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
+    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa --threads $threads)
     echo "primer removing done"
 else
-    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
+    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa --threads $threads)
     echo "No primers to remove, reads are filtered"
 fi
 
@@ -151,13 +150,13 @@ if [[ "$spe_def" == "ASV" ]]; then
             if [[ -z "$db" ]]; then
                 $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                 $(gunzip silva_16s_v123.fa.gz)
-                $($usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                 $(rm silva_16s_v123.fa)
             else
-                $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
             fi
             $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
-            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt > $output/asv_tax_sintax_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
             $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
         else
             echo "Not supported"
@@ -197,12 +196,12 @@ else
                 if [[ -z "$db" ]]; then
                     $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                     $(gunzip silva_16s_v123.fa.gz)
-                    $($usearch_bin --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                    $($usearch_bin --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $(./dependencies/vsearch_linux --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                     $(rm silva_16s_v123.fa)
                 else
-                    $($usearch_bin --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                    $($usearch_bin --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $(./dependencies/vsearch_linux --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                 fi
                 $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
                 $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
@@ -240,10 +239,10 @@ else
                     if [[ -z "$db" ]]; then
                         $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
                         $(gunzip silva_16s_v123.fa.gz)
-                        $($usearch_bin -sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                        $(./dependencies/vsearch_linux -sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                         $(rm silva_16s_v123.fa)
                     else
-                        $($usearch_bin -sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                        $(./dependencies/vsearch_linux -sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
                         echo "using $db"
                     fi
                     $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
