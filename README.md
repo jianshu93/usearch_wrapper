@@ -42,9 +42,9 @@ bash ./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S ASV -t SINTAX -e T 
 
 OTU clustering will be performed using UPARSE algorithm implemented in usearch (Edgar 2016, Nat. Method,https://www.nature.com/articles/nmeth.2604) and taxonomy classfication will performed either using the Näive bayesian classifier (NBC) (Wang et.al. 2007, Appl. Env. Micro,https://aem.asm.org/content/73/16/5261.short) or sintax algorithm inplemented in vsearch(Edgar 2016, bioRxive, https://doi.org/10.1101/074161).
 
-Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorithm (Edgar 2016,bioRxive, https://doi.org/10.1101/081257). We do not recommend this method because ASVs can artificially split bacterial genomes into separate clusters (Scholss 2021, bioRxive, https://doi.org/10.1101/2021.02.26.433139) and thus overestimation of species diversity (https://aem.asm.org/content/79/19/5962) due to 16S copy numer while OTU clustering at 97% identity is less easily subjected to this issue.
+Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorithm (Edgar 2016,bioRxive, https://doi.org/10.1101/081257). We do not recommend this method because ASVs can artificially split bacterial genomes into separate clusters (Scholss 2021, bioRxive, https://doi.org/10.1101/2021.02.26.433139) and thus overestimation of species diversity (https://aem.asm.org/content/79/19/5962) due to 16S copy numer while OTU clustering at 97% identity is less easily subjected to this issue. Or you can cluster ASV sequences into OTUs after the unoise3 step before creating OTU tables using -usearch_global. This option is not available now but will certainly be available in the near future.
 
-There are a number of ways to correct for 16S copy numbers via searching in the microbial genomic database. However, all those methods perform poorly because of large variation in 16S copies even in close related genomes(More than 99.9% genome similarity) (https://link.springer.com/article/10.1186/s40168-018-0420-9). What we suggest is to use presence-absence OTU table at the same time though this will not take into account the abundance of the same genome speceis in each sample. I am very interested in developing tools to correct the 16S copy bias considering the fact that we have a much larger complete microbial genome database.
+There are a number of ways to correct for 16S copy numbers via searching in the microbial genomic database. However, all those methods perform poorly because of large variation in 16S copies even in close related genomes(More than 99.9% genome similarity) (https://link.springer.com/article/10.1186/s40168-018-0420-9). What we suggest is to use presence-absence OTU table at the same time though this will not take into account the abundance of the same genome species in each sample. I am very interested in developing tools to correct the 16S copy bias considering the fact that we have a much larger complete microbial genome database.
 
 Options:
 -d directory contains raw forward and reverse reads, must end with _R1.fq and _R2.fq, .1.fastq and .2.fastq, .R1.fastq and .R2.fastq, .R1.fq and .R2.fq, .1.fq and .2.fq
@@ -71,6 +71,11 @@ TCCTCCGCTTATTGATATGC`
 -i identity for OTU clustering, default 0.97, and I strongly recommend the default one
 
 -u usearch binary path, /usr/local/bin/usearch, for example, make it executable first, by default is the ../dependencies/usearch_linux , a 32 bit version
+
+
+# More related to taxonomy classification
+
+There are a number of improvments/new implementations of RDP algorithm such as IDTAXA (https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-018-0521-5) and microclass package (https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-017-1583-2) but unfortunately they are all R packages (implemented in Rcpp) and there are no independent execuables available. There are some improvments like using both multinomial distribution models of kmer for training and classification.
 
 # Reference
 Edgar, R. C., & Flyvbjerg, H. (2015). Error filtering, pair assembly and error correction for next-generation sequencing reads. Bioinformatics, 1–7. http://doi.org/10.1093/bioinformatics/btv401

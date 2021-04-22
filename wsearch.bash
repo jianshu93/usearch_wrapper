@@ -35,7 +35,7 @@ do
            		jianshu.zhao@gatech.edu
                 Lisense MIT
 
-           		usage: usearch.bash -d ~/dir -S OTU -tax nbc -p primer.fa -tre T -T 8 -db ~/rdp_v18.fa -o ./results -id 0.97
+           		usage: usearch.bash -d ~/dir -S ASV -tax NBC -p primer.fa -tre T -T 8 -db ~/rdp_v18.fa -o ./results
 
 				OTU clustering will be performed using UPARSE algorithm implemented in usearch 
 				(Edgar 2016, Nat. Method) and taxonomy classfication will performed either 
