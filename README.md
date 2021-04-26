@@ -23,18 +23,23 @@ brew install git
 
 git clone https://github.com/jianshu93/usearch_wrapper
 
-### On linux please run 
+### On linux please run
 sudo apt-get install git
+### You can also install it via conda
+conda install git
 
 ## you can only run script in this directory because there are hard-coded dependencies in this directory
 cd usearch_wrapper
 chmod a+x ./wsearch.bash
-nohup time bash ./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S OTU -t SINTAX -e T &
+nohup time bash ./wsearch.bash -d ./demo_input -o ./output -T 16 -p primer1.fa -S OTU -t SINTAX -e T &
 ### you want to see each step
-bash ./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S ASV -t SINTAX -e T
+bash ./wsearch.bash -d ./demo_input -o ./output -T 16 -p primer1.fa -S ASV -t SINTAX -e T
+
+### if primers have been removed
+bash ./wsearch.bash -d ./demo_input -o ./output -T 16 -S ASV -t SINTAX -e T
 
 ### if you have you own usearch installed (64 bit for example on MacOS and Linux)
-bash ./wsearch.bash -d ./ -o ./output -T 16 -p primer1.fa -S ASV -t SINTAX -e T -u /usr/local/bin/usearch
+bash ./wsearch.bash -d ./demo_input -o ./output -T 16 -p primer1.fa -S ASV -t SINTAX -e T -u /usr/local/bin/usearch
 
 
 ```

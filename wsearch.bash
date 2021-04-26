@@ -49,8 +49,8 @@ do
                 at 97% identity is less easily subjected to this issue.
 
            		Options:
-           		-d directory contains raw forward and reverse reads, must end with _R1.fq and _R2.fq, 
-				   .1.fastq and .2.fastq, .R1.fastq and .R2.fastq, .R1.fq and .R2.fq, .1.fq and .2.fq
+           		-d directory contains raw forward and reverse reads, must end with _R1.fastq and _R2.fastq.
+                   - and _ are not allowed in the name before _R1.fastq
                 -o output directory
 				-t taxonomy classification method, NBC or sintax, default NBC
                 -S species definition, ASV or OTU or both, by default is OTU only. Both will take more time
