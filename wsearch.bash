@@ -35,33 +35,48 @@ do
            		jianshu.zhao@gatech.edu
                 Lisense MIT
 
-           		usage: usearch.bash -d ~/dir -S ASV -tax NBC -p primer.fa -tre T -T 8 -db ~/rdp_v18.fa -o ./results
+           		usage: usearch.bash -d ../demo_input -S ASV 
+                -tax SINTAX -p primer.fa -tre T -T 8 -o ./results
+                
+				OTU clustering will be performed using UPARSE algorithm 
+                implemented in usearch (Edgar 2016, Nat. Method) and 
+                taxonomy classfication will performed either using the 
+                Näive bayesian classifier (NBC) (Wang et.al. 2007, 
+                Appl. Env. Micro) or sintax algorithm inplemented 
+                in vsearch (Edgar 2016, bioRxive, 
+                https://doi.org/10.1101/074161).
 
-				OTU clustering will be performed using UPARSE algorithm implemented in usearch 
-				(Edgar 2016, Nat. Method) and taxonomy classfication will performed either 
-				using the Näive bayesian classifier (NBC) (Wang et.al. 2007, Appl. Env. Micro) or sintax 
-				algorithm inplemented in vsearch(Edgar 2016, bioRxive, https://doi.org/10.1101/074161).
-
-                Exact sequence variance (e.g. ASV) will be generated using the unoise2/3 algorithm 
-                (Edgar 2016,bioRxive, https://doi.org/10.1101/081257). We do not recommend this method 
-                because ASVs can artificially split bacterial genomes into separate clusters 
-                (Scholss 2021, bioRxive, https://doi.org/10.1101/2021.02.26.433139) while OTU clustering 
-                at 97% identity is less easily subjected to this issue.
+                Exact sequence variance (e.g. ASV) will be generated
+                using the unoise2/3 algorithm (Edgar 2016,bioRxive, 
+                https://doi.org/10.1101/081257). We do not recommend
+                this method because ASVs can artificially split bacterial
+                genomes into separate clusters (Scholss 2021, 
+                bioRxive, https://doi.org/10.1101/2021.02.26.433139) 
+                while OTU clustering at 97% identity is less easily 
+                subjected to this issue.
 
            		Options:
-           		-d directory contains raw forward and reverse reads, must end with _R1.fastq and _R2.fastq.
-                   - and _ are not allowed in the name before _R1.fastq
+           		-d directory contains raw forward and reverse reads, 
+                   must end with _R1.fastq and _R2.fastq. - and _ 
+                   are not allowed in the name before _R1.fastq
                 -o output directory
-				-t taxonomy classification method, NBC or sintax, default NBC
-                -S species definition, ASV or OTU or both, by default is OTU only. Both will take more time
-           		-p primers used for ampflication, should be in fasta format with fasta header >forward and
+				-t taxonomy classification method, NBC or sintax,
+                   default is NBC
+                -S species definition, ASV or OTU or both, by 
+                    default is OTU only. Both will take more time
+           		-p primers used for ampflication, should be in
+                   fasta format with fasta header >forward and
 				   >reverse, respectively
                 -e phylogenetric tree building, T or F, defaulf F
-           		-T threads used for vsearch and usearch, default all the threads available
-				-b database path for taxonomy classification, default none and download database from 
-					usearch website for each classifier, use corresponding database for NBC or Sintax
+           		-T threads used for vsearch and usearch, 
+                   default all the threads available
+				-b database path for taxonomy classification, 
+                    default none and download database from 
+					usearch website for each classifier, 
+                    use corresponding database for NBC or Sintax
                 -i identity for OTU clustering, default 0.97
-                -u usearch binary path, ~/usearch, for example, make it executable first, by default is the 
+                -u usearch binary path, ~/usearch, for example,
+                    make it executable first, by default is the 
                     ../dependencies/usearch_linux , a 32 bit version"
            exit 1
            ;;

@@ -20,11 +20,13 @@ Now this script supported Linux and MacOS, tested on Ubuntu 18.0.4, RHEL 7 and M
 
 brew install gawk
 brew install git
+brew install libgit2
 
 git clone https://github.com/jianshu93/usearch_wrapper
 
 ### On linux please run
 sudo apt-get install git
+sudo apt-get install libgit2
 ### You can also install it via conda
 conda install git
 
