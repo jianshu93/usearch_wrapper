@@ -106,3 +106,5 @@ Price, M. N., Deha, P. S., & Arkin, A. P. (2010). FastTree 2 – Approximately M
 Edgar, Robert C. 2016. “SINTAX: a Simple Non-Bayesian Taxonomy Classifier for 16S and ITS Sequences.” bioRxiv 1–20.
 
 Wang, Qiong, George M. Garrity, James M. Tiedje, and James R. Cole. 2007. “Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences Into the New Bacterial Taxonomy.” Applied and environmental microbiology 73(16):5261–67.
+
+Schloss, Patrick D. et al. 2009. “Introducing Mothur: Open-Source, Platform-Independent, Community-Supported Software for Describing and Comparing Microbial Communities.” Applied and environmental microbiology 75(23):7537–41.
