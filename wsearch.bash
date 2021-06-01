@@ -7,7 +7,7 @@ dir=./
 output=./output
 spe_def="ASV"
 identity=0.97
-tax="NBC"
+tax="mothur"
 tre="F"
 usearch_bin=./dependencies/usearch11.0.667_i86linux32
 
@@ -36,15 +36,19 @@ do
                 Lisense MIT
 
            		usage: usearch.bash -d ../demo_input -S ASV 
-                -tax SINTAX -p primer.fa -tre T -T 8 -o ./results
-                
+                -tax SINTAX -tre T -T 8 -o ./results
+
+                usearch.bash -d ../demo_input -S ASV 
+                -tax SINTAX -p primers.fa -tre T -T 8 -o ./results
+
 				OTU clustering will be performed using UPARSE algorithm 
                 implemented in usearch (Edgar 2016, Nat. Method) and 
                 taxonomy classfication will performed either using the 
                 Näive bayesian classifier (NBC) (Wang et.al. 2007, 
                 Appl. Env. Micro) or sintax algorithm inplemented 
                 in vsearch (Edgar 2016, bioRxive, 
-                https://doi.org/10.1101/074161).
+                https://doi.org/10.1101/074161) or NBC implemented in
+                mothur software (https://mothur.org/wiki/classify.seqs/)
 
                 Exact sequence variance (e.g. ASV) will be generated
                 using the unoise2/3 algorithm (Edgar 2016,bioRxive, 
@@ -60,10 +64,10 @@ do
                    must end with _R1.fastq and _R2.fastq. - and _ 
                    are not allowed in the name before _R1.fastq
                 -o output directory
-				-t taxonomy classification method, NBC or sintax,
-                   default is NBC
+				-t taxonomy classification method, NBC, SINTAX or mothur,
+                   default is mothur NBC
                 -S species definition, ASV or OTU or both, by 
-                    default is OTU only. Both will take more time
+                    default is OTU only. both will take more time
            		-p primers used for ampflication, should be in
                    fasta format with fasta header >forward and
 				   >reverse, respectively
@@ -72,8 +76,12 @@ do
                    default all the threads available
 				-b database path for taxonomy classification, 
                     default none and download database from 
-					usearch website for each classifier, 
-                    use corresponding database for NBC or Sintax
+					usearch/mothur website for each classifier, 
+                    use corresponding database for NBC, Sintax
+                    and mothur NBC. For mothur NBC, database sequences
+                    must be aligned. Taxonomy file is alone with the same
+                    prefix (e.g., silva_v132.align.taxonomy). See here
+                    (https://mothur.org/wiki/taxonomy_outline/) for details
                 -i identity for OTU clustering, default 0.97
                 -u usearch binary path, ~/usearch, for example,
                     make it executable first, by default is the 
@@ -160,24 +168,34 @@ if [[ "$spe_def" == "ASV" ]]; then
         $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
         $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
         echo "taxonomy asignment of ASVs using Näive bayesian classifier done"
-    else
-        if [[ "$tax" == "SINTAX" ]]; then
-            if [[ -z "$db" ]]; then
-                $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
-                $(gunzip silva_16s_v123.fa.gz)
-                $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                $(rm silva_16s_v123.fa)
-            else
-                $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-            fi
-            $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
-            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
-            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+    elif [[ "$tax" == "SINTAX" ]]; then
+        if [[ -z "$db" ]]; then
+            $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
+            $(gunzip silva_16s_v123.fa.gz)
+            $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+            $(rm silva_16s_v123.fa)
         else
-            echo "Not supported"
+            $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
         fi
-        echo "taxonomy asignment of ASVs using sintax done"
+        $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
+        $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
+        $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+    elif [[ "$tax" == "mothur" ]]; then
+        if [[ -z "$db" ]]; then
+            $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
+            $(tar xzvf silva.nr_v132.tgz)
+            ./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
+            $(rm silva.nr_v132*)
+        else
+            ./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=$db, taxonomy=$db.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
+        fi
+        $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_mothur_0.8.txt)
+        $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/ASVs.nr_v132.wang.taxonomy >> $output/asv_tax_mothur_0.8.txt)
+        $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_mothur_0.8.txt > $output/asv_table_mothur.txt)
+    else
+        echo "Method not supported"
     fi
+        echo "taxonomy asignment of ASVs using sintax done"
 else
     if [[ "$spe_def" == "both" ]]; then
         echo "I am clustering OTUs and generate ASVs"
@@ -206,28 +224,44 @@ else
             $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
             $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
             echo "taxonomy asignment of OTUs and ASVs using Näive bayesian classifier done"
-        else
-            if [[ "$tax" == "SINTAX" ]]; then
-                if [[ -z "$db" ]]; then
-                    $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
-                    $(gunzip silva_16s_v123.fa.gz)
-                    $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                    $(./dependencies/vsearch_linux --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                    $(rm silva_16s_v123.fa)
-                else
-                    $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                    $(./dependencies/vsearch_linux --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                fi
-                $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
-                $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
-                $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
-                $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
-                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
-                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
+        elif [[ "$tax" == "SINTAX" ]]; then
+            if [[ -z "$db" ]]; then
+                $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
+                $(gunzip silva_16s_v123.fa.gz)
+                $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db silva_16s_v123.fa --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(./dependencies/vsearch_linux --sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(rm silva_16s_v123.fa)
             else
-                echo "Taxonomy assignment not supported"
+                $(./dependencies/vsearch_linux --sintax $output/ASVs.fa --db $db --tabbedout $output/asv_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                $(./dependencies/vsearch_linux --sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
             fi
-            echo "Taxonomy asignment of OTUs and ASVs using sintax done"
+            $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
+            $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
+            echo "Taxonomy asignment of OTUs and ASVs using SINTAX done"
+        elif [[ "$tax" == "mothur" ]]; then
+            if [[ -z "$db" ]]; then
+                $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
+                $(tar xzvf silva.nr_v132.tgz)
+                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                $(rm silva.nr_v132*)
+            else
+                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+            fi
+            $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_mothur_0.8.txt)
+            $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_mothur_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/ASVs.nr_v132.wang.taxonomy >> $output/asv_tax_mothur_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_mothur_0.8.txt > $output/asv_table_mothur.txt)
+            $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/otus.nr_v132.wang.taxonomy >> $output/otu_tax_mothur_0.8.txt)
+            $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_mothur_0.8.txt > $output/otu_table_mothur.txt)
+            echo "Taxonomy asignment of OTUs and ASVs using mothur NBC done"
+        else
+            echo "Taxonomy assignment method not supported"
         fi
     else
         if [[ "$spe_def" == "OTU" ]]; then
@@ -249,24 +283,35 @@ else
                 $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
                 $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
                 echo "taxonomy asignment of OTUs using Näive bayesian classifier done"
-            else
-                if [[ "$tax" == "SINTAX" ]]; then
-                    if [[ -z "$db" ]]; then
-                        $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
-                        $(gunzip silva_16s_v123.fa.gz)
-                        $(./dependencies/vsearch_linux -sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                        $(rm silva_16s_v123.fa)
-                    else
-                        $(./dependencies/vsearch_linux -sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
-                        echo "using $db"
-                    fi
-                    $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
-                    $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
-                    $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
-                    echo "taxonomy asignment of OTUs using SINTAX classifier done"
+            elif [[ "$tax" == "SINTAX" ]]; then
+                if [[ -z "$db" ]]; then
+                    $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
+                    $(gunzip silva_16s_v123.fa.gz)
+                    $(./dependencies/vsearch_linux -sintax $output/otus.fa --db silva_16s_v123.fa --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    $(rm silva_16s_v123.fa)
                 else
-                    echo "Taxonomy assignment method not supported"
+                    $(./dependencies/vsearch_linux -sintax $output/otus.fa --db $db --tabbedout $output/otu_tax_sintax.txt --threads $threads --sintax_cutoff 0.8 -strand plus)
+                    echo "using $db"
                 fi
+                $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
+                $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
+                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
+                echo "taxonomy asignment of OTUs using SINTAX classifier done"
+            elif [[ "$tax" == "mothur" ]]; then
+                if [[ -z "$db" ]]; then
+                    $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
+                    $(tar xzvf silva.nr_v132.tgz)
+                    $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                    $(rm silva.nr_v132*)
+                else
+                    $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads")
+                fi
+                $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_mothur_0.8.txt)
+                $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/otus.nr_v132.wang.taxonomy >> $output/otu_tax_mothur_0.8.txt)
+                $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_mothur_0.8.txt > $output/otu_table_mothur.txt)
+                echo "taxonomy asignment of OTUs using mothur NBC classifier done"
+            else
+                echo "Taxonomy assignment method not supported"
             fi
         else
             echo "Only ASV and OTU are supported"
