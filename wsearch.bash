@@ -159,10 +159,10 @@ if [[ "$spe_def" == "ASV" ]]; then
 	    if [[ -z "$db" ]]; then
 		    $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		    $(gunzip rdp_16s_v18.fa.gz)
-            $(usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
+            $(./dependencies/usearch11.0.667_i86linux32 -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
             $(rm rdp_16s_v18.fa)
 	    else
-            $(usearch_bin -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
+            $(./dependencies/usearch11.0.667_i86linux32 -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
 	    fi
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
         $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
