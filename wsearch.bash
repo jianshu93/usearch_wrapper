@@ -80,7 +80,7 @@ do
                     use corresponding database for NBC, Sintax
                     and mothur NBC. For mothur NBC, database sequences
                     must be aligned. Taxonomy file is alone with the same
-                    prefix (e.g., silva_v132.align.taxonomy). See here
+                    prefix (e.g., silva_v132.align.tax). See here
                     (https://mothur.org/wiki/taxonomy_outline/) for details
                 -i identity for OTU clustering, default 0.97
                 -u usearch binary path, ~/usearch, for example,
@@ -92,7 +92,7 @@ do
 done
 
 echo "$primer will be used for primer removing"
-echo $usearch_bin
+echo "using $usearch_bin"
 
 if [ -d "$dir" ] 
 then
@@ -159,10 +159,10 @@ if [[ "$spe_def" == "ASV" ]]; then
 	    if [[ -z "$db" ]]; then
 		    $(wget https://www.drive5.com/sintax/rdp_16s_v18.fa.gz)
 		    $(gunzip rdp_16s_v18.fa.gz)
-            $(./dependencies/usearch11.0.667_i86linux32 -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
+            $($usearch_bin -nbc_tax $output/ASVs.fa --db rdp_16s_v18.fa -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
             $(rm rdp_16s_v18.fa)
 	    else
-            $(./dependencies/usearch11.0.667_i86linux32 -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
+            $($usearch_bin -nbc_tax $output/ASVs.fa --db $db -strand plus --threads $threads -tabbedout $output/asv_tax_rdp.txt)
 	    fi
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
         $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
@@ -184,10 +184,10 @@ if [[ "$spe_def" == "ASV" ]]; then
         if [[ -z "$db" ]]; then
             $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
             $(tar xzvf silva.nr_v132.tgz)
-            ./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
+            ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/ASVs.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
             $(rm silva.nr_v132*)
         else
-            ./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=$db, taxonomy=$db.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
+            ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/ASVs.fa, template=$db, taxonomy=$db.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
         fi
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_mothur_0.8.txt)
         $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/ASVs.nr_v132.wang.taxonomy >> $output/asv_tax_mothur_0.8.txt)
@@ -246,12 +246,12 @@ else
             if [[ -z "$db" ]]; then
                 $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
                 $(tar xzvf silva.nr_v132.tgz)
-                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
-                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/ASVs.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
+                ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/otus.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
                 $(rm silva.nr_v132*)
             else
-                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/ASVs.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
-                $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/ASVs.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
+                ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/otus.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
             fi
             $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_mothur_0.8.txt)
             $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_mothur_0.8.txt)
@@ -301,10 +301,10 @@ else
                 if [[ -z "$db" ]]; then
                     $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
                     $(tar xzvf silva.nr_v132.tgz)
-                    $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)")
+                    ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/otus.fa, template=./silva.nr_v132.align, taxonomy=./silva.nr_v132.tax, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
                     $(rm silva.nr_v132*)
                 else
-                    $(./dependencies/mothur_linux "#classify.seqs(fasta=$output/otus.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads")
+                    ./dependencies/mothur_linux --quiet "#classify.seqs(fasta=$output/otus.fa, template=$db, taxonomy=$db.taxonomy, method=wang, cutoff=80, probs=F, search=kmer, processors=$threads)"
                 fi
                 $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_mothur_0.8.txt)
                 $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/otus.nr_v132.wang.taxonomy >> $output/otu_tax_mothur_0.8.txt)
