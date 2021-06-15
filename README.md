@@ -1,8 +1,8 @@
 # usearch_wrapper: wsearch.bash
-usearch wrapper for amplicon analysis. Support for 16S and ITS. This is still under active development and will be ready in a few months. Please contact jianshu(jianshu.zhao@gatech.edu)
+This is usearch wrapper for amplicon analysis :smiley: . Support for 16S and ITS. This is still under active development and will be ready in a few months. Please contact jianshu(jianshu.zhao@gatech.edu)
 This shell script has the following dependencies:
 
-1. Falco v0.2.4 for reads quality, a C++ implentation of FastQC, way faster and user friendly than FastQC and more importantly, it is under active development (https://github.com/smithlabcode/falco)
+1. Falco v0.2.4 for reads quality, a C++ implentation of FastQC, way faster and user friendly than FastQC and more importantly, it is under active development (https://github.com/smithlabcode/falco). This is not available yet but very soon :calendar:
 2. vsearch v2.17 and Usearch v11 of core sequence analysis (https://drive5.com/usearch/download.html),both 32 bit and 64 bit usearch works but we strongly suggest 64 bit for large dataset. For example, when you have more then 300 samples or even more. Note that usearch 32-bit is not supported on MacOS Catillina or later but only Mojave or before. You will not be able to run usearch on MacOS Catillina or latter. But it should works on all major linux distributions. Let me know when you have large dataset and want to use an 64-bit. I can help with that
 3. mothur v1.44.3 or latter, tested on ubuntu 18.0.4 and MacOS Mojave or latter.
 4. Clustal Omega v1.2.4 for multiple sequence alignment (MSA).
@@ -74,7 +74,7 @@ GTGARTCATCGARTCTTTG
 >reverse
 TCCTCCGCTTATTGATATGC`
 ```
-
+```
 -e phylogenetric tree building, T or F, defaulf F
 
 -T threads used for vsearch and usearch, default all the threads available
@@ -84,7 +84,10 @@ TCCTCCGCTTATTGATATGC`
 -i identity for OTU clustering, default 0.97, and I strongly recommend the default one
 
 -u usearch binary path, /usr/local/bin/usearch, for example, make it executable first, by default is the ../dependencies/usearch_linux , a 32 bit version
+```
 
+# output
+In the output directory :file_folder: , you will have OTU/ASV table with taxonomy and also representative sequences. Tree file is also available.
 
 # More related to taxonomy classification
 

@@ -36,10 +36,10 @@ do
                 Lisense MIT
 
            		usage: usearch.bash -d ../demo_input -S ASV 
-                -tax SINTAX -tre T -T 8 -o ./results
+                -t SINTAX -e T -T 8 -o ./results
 
                 usearch.bash -d ../demo_input -S ASV 
-                -tax SINTAX -p primers.fa -tre T -T 8 -o ./results
+                -t SINTAX -p primers.fa -e T -T 8 -o ./results
 
 				OTU clustering will be performed using UPARSE algorithm 
                 implemented in usearch (Edgar 2016, Nat. Method) and 
@@ -167,7 +167,7 @@ if [[ "$spe_def" == "ASV" ]]; then
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_rdp_0.5.txt)
         $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
         $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
-        echo "taxonomy asignment of ASVs using Näive bayesian classifier done"
+        echo "Taxonomy asignment of ASVs using Näive bayesian classifier done"
     elif [[ "$tax" == "SINTAX" ]]; then
         if [[ -z "$db" ]]; then
             $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
@@ -180,6 +180,7 @@ if [[ "$spe_def" == "ASV" ]]; then
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_sintax_0.8.txt)
         $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_sintax.txt >> $output/asv_tax_sintax_0.8.txt)
         $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_sintax_0.8.txt > $output/asv_table_sintax.txt)
+        echo "Taxonomy asignment of ASVs using SINTAX done"
     elif [[ "$tax" == "mothur" ]]; then
         if [[ -z "$db" ]]; then
             $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
@@ -192,10 +193,10 @@ if [[ "$spe_def" == "ASV" ]]; then
         $(echo -e "#OTU ID\ttaxonomy" > $output/asv_tax_mothur_0.8.txt)
         $(awk 'BEGIN {FS="\t"}; {print $1,$2}' OFS='\t' $output/ASVs.nr_v132.wang.taxonomy >> $output/asv_tax_mothur_0.8.txt)
         $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_mothur_0.8.txt > $output/asv_table_mothur.txt)
+        echo "Taxonomy asignment of ASVs using mothur NBC done"
     else
-        echo "Method not supported"
+        echo "Taxonomy assignment method not supported"
     fi
-        echo "taxonomy asignment of ASVs using sintax done"
 else
     if [[ "$spe_def" == "both" ]]; then
         echo "I am clustering OTUs and generate ASVs"
@@ -223,7 +224,7 @@ else
             $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/asv_tax_rdp.txt >> $output/asv_tax_rdp_0.5.txt)
             $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/ASV_counts.txt $output/asv_tax_rdp_0.5.txt > $output/asv_table_rdp.txt)
             $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
-            echo "taxonomy asignment of OTUs and ASVs using Näive bayesian classifier done"
+            echo "Taxonomy asignment of OTUs and ASVs using Näive bayesian classifier done"
         elif [[ "$tax" == "SINTAX" ]]; then
             if [[ -z "$db" ]]; then
                 $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
@@ -282,7 +283,7 @@ else
                 $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_rdp_0.5.txt)
                 $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_rdp.txt >> $output/otu_tax_rdp_0.5.txt)
                 $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_rdp_0.5.txt > $output/otu_table_rdp.txt)
-                echo "taxonomy asignment of OTUs using Näive bayesian classifier done"
+                echo "taxonomy asignment of OTUs using usearch Näive bayesian classifier done"
             elif [[ "$tax" == "SINTAX" ]]; then
                 if [[ -z "$db" ]]; then
                     $(wget https://www.drive5.com/sintax/silva_16s_v123.fa.gz)
@@ -296,7 +297,7 @@ else
                 $(echo -e "#OTU ID\ttaxonomy" > $output/otu_tax_sintax_0.8.txt)
                 $(awk 'BEGIN {FS="\t"}; {print $1,$4}' OFS='\t' $output/otu_tax_sintax.txt >> $output/otu_tax_sintax_0.8.txt)
                 $(awk 'BEGIN {FS="\t"}; FNR==NR { a[$1]=$0; next } $1 in a { print a[$1], $2}' OFS='\t' $output/otu_counts.txt $output/otu_tax_sintax_0.8.txt > $output/otu_table_sintax.txt)
-                echo "taxonomy asignment of OTUs using SINTAX classifier done"
+                echo "taxonomy asignment of OTUs using usearch -SINTAX classifier done"
             elif [[ "$tax" == "mothur" ]]; then
                 if [[ -z "$db" ]]; then
                     $(wget https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz)
