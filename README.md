@@ -69,7 +69,7 @@ Options:
 >forward 
 GTGARTCATCGARTCTTTG
 >reverse
-TCCTCCGCTTATTGATATGC`
+TCCTCCGCTTATTGATATGC
 ```
 ```
 -e phylogenetric tree building, T or F, defaulf F
