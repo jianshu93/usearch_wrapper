@@ -152,7 +152,7 @@ echo "Sequence dereplication done"
 if [[ "$spe_def" == "ASV" ]]; then
     echo "I am clustering ASVs"
     $($usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus $output/ASVs.fa -minsize 8 -threads $threads)
-    $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
+    $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --strand both)
     echo "I am done generating ASVs"
     echo "I am doing taxonomy assignment of ASVs"
     if [[ "$tax" == "NBC" ]]; then
@@ -200,9 +200,9 @@ if [[ "$spe_def" == "ASV" ]]; then
 else
     if [[ "$spe_def" == "both" ]]; then
         echo "I am clustering OTUs and generate ASVs"
-        $($usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
+        $($usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu)
         $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
-        $($usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus ASVs.fa -minsize 8 -threads $threads)
+        $($usearch_bin -unoise3 $output/uniques_vsearch.fa -zotus ASVs.fa -minsize 8)
         $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/ASVs.fa --id 0.99 --otutabout $output/ASV_counts.txt --threads $threads --strand both)
 
         echo "I am done clustering OTUs and generating ASVs"
@@ -267,7 +267,7 @@ else
     else
         if [[ "$spe_def" == "OTU" ]]; then
             echo "I am clustering OTUs"
-            $($usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu -threads $threads)
+            $($usearch_bin -cluster_otus $output/uniques_vsearch.fa -otus $output/otus.fa -relabel Otu)
             $(./dependencies/vsearch_linux --usearch_global $output/QCd_merged.fa --db $output/otus.fa --id 0.97 --otutabout $output/otu_counts.txt --threads $threads --strand both)
             echo "OTUs clustering done"
             echo "I am doing taxonomy assignment of OTUs"
