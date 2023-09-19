@@ -138,7 +138,7 @@ if [[ ! -z "$primer" ]]; then
     variable2=`expr $(awk '$4 == "-"' $output/primer_hits.txt | awk '{print $3 - $2}' | sort | awk ' { a[i++]=$1; } END { print a[int(i/2)]; }') + 1`
     echo "$variable1 bps will be removed at the beginning of the merged reads"
     echo "$variable2 bps will be removed at the end of the merged reads"
-    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa --threads $threads)
+    $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq --fastq_stripleft $variable1 --fastq_stripright $variable2 -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 290 --fastq_minlen 220 --fastaout $output/QCd_merged.fa)
     echo "primer removing done"
 else
     $(./dependencies/vsearch_linux --fastq_filter $output/all_samples_merged.fq -fastq_maxee 1 --fastq_qmax 42 --fastq_maxlen 400 --fastq_minlen 200 --fastaout $output/QCd_merged.fa --threads $threads)
@@ -146,7 +146,7 @@ else
 fi
 
 echo "I am dereplicating sequences"
-$(./dependencies/vsearch_linux --derep_fulllength $output/QCd_merged.fa -sizeout -relabel Uniq -output $output/uniques_vsearch.fa --threads $threads)
+$(./dependencies/vsearch_linux --derep_fulllength $output/QCd_merged.fa -sizeout -relabel Uniq -output $output/uniques_vsearch.fa)
 echo "Sequence dereplication done"
 
 if [[ "$spe_def" == "ASV" ]]; then
